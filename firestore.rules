@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidCatProfile(data, userId) {
+      return data.userId == userId &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 60 &&
+        data.breed is string && data.breed.size() <= 60 &&
+        (!('ageYears' in data) || (data.ageYears is number && data.ageYears >= 0 && data.ageYears <= 40)) &&
+        (!('avatarColor' in data) || data.avatarColor is string) &&
+        (!('vocalQuirks' in data) || (data.vocalQuirks is string && data.vocalQuirks.size() <= 500)) &&
+        (!('baselinePitchHz' in data) || (data.baselinePitchHz is number && data.baselinePitchHz >= 0 && data.baselinePitchHz <= 8000)) &&
+        (!('favoriteTriggers' in data) || (data.favoriteTriggers is list && data.favoriteTriggers.size() <= 20)) &&
+        (!('calibrationOffset' in data) || data.calibrationOffset is number) &&
+        data.createdAt is timestamp && data.createdAt <= request.time &&
+        (!('updatedAt' in data) || data.updatedAt == null || (data.updatedAt is timestamp && data.updatedAt <= request.time));
+    }
+
+    function isValidVocalization(data, userId) {
+      return data.userId == userId &&
+        data.catId is string && data.catId.size() > 0 &&
+        (!('catName' in data) || data.catName is string) &&
+        data.translation is string && data.translation.size() > 0 && data.translation.size() <= 1000 &&
+        data.emotionalState is string && data.emotionalState.size() > 0 && data.emotionalState.size() <= 50 &&
+        (!('pitchHz' in data) || data.pitchHz is number) &&
+        (!('durationMs' in data) || data.durationMs is number) &&
+        (!('volumeDb' in data) || data.volumeDb is number) &&
+        (!('vocalizationType' in data) || data.vocalizationType is string) &&
+        (!('earState' in data) || data.earState is string) &&
+        (!('tailState' in data) || data.tailState is string) &&
+        (!('eyeState' in data) || data.eyeState is string) &&
+        (!('mouthState' in data) || data.mouthState is string) &&
+        (!('environmentalTrigger' in data) || data.environmentalTrigger is string) &&
+        (!('confidenceScore' in data) || (data.confidenceScore is number && data.confidenceScore >= 0.0 && data.confidenceScore <= 1.0)) &&
+        (!('userFeedbackTag' in data) || data.userFeedbackTag is string) &&
+        (!('manualEmotionTag' in data) || data.manualEmotionTag is string) &&
+        (!('manualContextTag' in data) || data.manualContextTag is string) &&
+        data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidMoodLog(data, userId) {
+      return data.userId == userId &&
+        data.catId is string && data.catId.size() > 0 &&
+        data.mood is string && data.mood.size() > 0 && data.mood.size() <= 50 &&
+        data.score is number && data.score >= 0.0 && data.score <= 1.0 &&
+        (!('vocalizationCount' in data) || data.vocalizationCount is number) &&
+        data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /cats/{catId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidCatProfile(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidCatProfile(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /vocalizations/{vocalizationId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidVocalization(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidVocalization(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /mood_logs/{logId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidMoodLog(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidMoodLog(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "MeowLingo",
+  "description": "Translates cat meows into human text using real-time audio analysis, behavioral signals dictionary, vocal quirk profiles, cloud sync, and camera posture correlation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

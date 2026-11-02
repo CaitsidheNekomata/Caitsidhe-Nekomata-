@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "CatProfile": {
+      "title": "CatProfile",
+      "description": "Personalized cat profile including vocal baseline and behavioral quirks",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "ageYears": { "type": "number" },
+        "breed": { "type": "string" },
+        "avatarColor": { "type": "string" },
+        "vocalQuirks": { "type": "string" },
+        "baselinePitchHz": { "type": "number" },
+        "favoriteTriggers": { "type": "array" },
+        "calibrationOffset": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "name", "breed", "createdAt"]
+    },
+    "Vocalization": {
+      "title": "Vocalization",
+      "description": "Historical meow acoustic analysis, camera posture correlation, and translation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "catId": { "type": "string" },
+        "catName": { "type": "string" },
+        "pitchHz": { "type": "number" },
+        "durationMs": { "type": "number" },
+        "volumeDb": { "type": "number" },
+        "vocalizationType": { "type": "string" },
+        "earState": { "type": "string" },
+        "tailState": { "type": "string" },
+        "eyeState": { "type": "string" },
+        "mouthState": { "type": "string" },
+        "environmentalTrigger": { "type": "string" },
+        "translation": { "type": "string" },
+        "emotionalState": { "type": "string" },
+        "confidenceScore": { "type": "number" },
+        "userFeedbackTag": { "type": "string" },
+        "manualEmotionTag": { "type": "string" },
+        "manualContextTag": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "catId", "translation", "emotionalState", "createdAt"]
+    },
+    "MoodLog": {
+      "title": "MoodLog",
+      "description": "Hourly or event-driven mood assessment log for 24-hour historical trend",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "catId": { "type": "string" },
+        "mood": { "type": "string" },
+        "score": { "type": "number" },
+        "vocalizationCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "catId", "mood", "score", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/cats/{catId}": {
+      "schema": { "$ref": "#/entities/CatProfile" },
+      "description": "Cats owned by the user"
+    },
+    "/users/{userId}/vocalizations/{vocalizationId}": {
+      "schema": { "$ref": "#/entities/Vocalization" },
+      "description": "Historical vocalization logs and translations"
+    },
+    "/users/{userId}/mood_logs/{logId}": {
+      "schema": { "$ref": "#/entities/MoodLog" },
+      "description": "Mood logs for tracking emotional trends over time"
+    }
+  }
+}
